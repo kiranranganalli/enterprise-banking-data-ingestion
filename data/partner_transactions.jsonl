@@ -1,0 +1,10 @@
+{"transaction_id": "2186570", "transaction_type": "CASH_OUT", "transaction_amount": "131098.97", "source_account": "C1009454633", "destination_account": "C1445488642", "fraud_flag": "0"}
+{"transaction_id": "5301781", "transaction_type": "CASH_OUT", "transaction_amount": "199694.54", "source_account": "C1770667254", "destination_account": "C403532226", "fraud_flag": "0"}
+{"transaction_id": "5583745", "transaction_type": "CASH_OUT", "transaction_amount": "20447.36", "source_account": "C231530535", "destination_account": "C791136241", "fraud_flag": "0"}
+{"transaction_id": "2984498", "transaction_type": "PAYMENT", "transaction_amount": "4076.62", "source_account": "C1592738815", "destination_account": "M1437745087", "fraud_flag": "0"}
+{"transaction_id": "4424367", "transaction_type": "PAYMENT", "transaction_amount": "12482.81", "source_account": "C255857088", "destination_account": "M987835683", "fraud_flag": "0"}
+{"transaction_id": "428588", "transaction_type": "CASH_IN", "transaction_amount": "66775.57", "source_account": "C884680556", "destination_account": "C2075280061", "fraud_flag": "0"}
+{"transaction_id": "3827201", "transaction_type": "CASH_OUT", "transaction_amount": "142914.37", "source_account": "C577280244", "destination_account": "C1173213830", "fraud_flag": "0"}
+{"transaction_id": "3339688", "transaction_type": "PAYMENT", "transaction_amount": "21539.23", "source_account": "C1918330697", "destination_account": "M1278524018", "fraud_flag": "0"}
+{"transaction_id": "417231", "transaction_type": "CASH_OUT", "transaction_amount": "236738.26", "source_account": "C723598536", "destination_account": "C894964785", "fraud_flag": "0"}
+{"transaction_id": "496370", "transaction_type": "CASH_OUT", "transaction_amount": "33529.08", "source_account": "C1466237939", "destination_account": "C1867792760", "fraud_flag": "0"}

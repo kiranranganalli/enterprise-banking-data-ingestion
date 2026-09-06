@@ -1,0 +1,31 @@
+# Environment / secrets
+.env
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# SQLite databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Generated ingestion state
+data/state/
+data/output/
+data/benchmark/
+data/rejected/
+
+# Large generated datasets
+data/transactions_100k.csv
+data/transactions_1m.csv
+
+# IDE
+.vscode/
+.idea/

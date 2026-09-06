@@ -1,0 +1,173 @@
+from app.checkpoint import CheckpointStore
+from app.config import Settings
+from app.ingestion.factory import (
+    create_source_adapter,
+)
+from app.logging_config import (
+    configure_logging,
+)
+from app.services.ingestion_service import (
+    IngestionService,
+)
+from app.sqlite_idempotency import (
+    SQLiteProcessedTransactionStore,
+)
+from app.sqlite_sink import (
+    SQLiteTransactionSink,
+)
+
+
+# ------------------------------------------
+# Logging
+# ------------------------------------------
+
+configure_logging()
+
+
+# ------------------------------------------
+# Configuration
+# ------------------------------------------
+
+settings = Settings()
+
+
+# ------------------------------------------
+# Checkpoint state
+# ------------------------------------------
+
+checkpoint_store = CheckpointStore(
+    file_path=settings.checkpoint_file_path
+)
+
+
+# ------------------------------------------
+# Idempotency state
+# ------------------------------------------
+
+processed_store = (
+    SQLiteProcessedTransactionStore(
+        database_path=(
+            settings.idempotency_database_path
+        )
+    )
+)
+
+
+# ------------------------------------------
+# Destination database
+# ------------------------------------------
+
+transaction_sink = (
+    SQLiteTransactionSink(
+        database_path=(
+            settings.transaction_database_path
+        )
+    )
+)
+
+
+# ------------------------------------------
+# Source
+# ------------------------------------------
+
+adapter = create_source_adapter(
+    source_type=settings.source_type,
+    file_path=settings.input_file_path,
+    api_url=settings.api_url,
+    checkpoint_store=checkpoint_store,
+    source_system=settings.source_system,
+)
+
+
+# ------------------------------------------
+# Ingestion orchestration
+# ------------------------------------------
+
+service = IngestionService(
+    adapter=adapter,
+    rejected_file_path=(
+        settings.rejected_file_path
+    ),
+    processed_store=processed_store,
+    sink=transaction_sink,
+    checkpoint_store=checkpoint_store,
+    batch_size=settings.batch_size,
+)
+
+
+# ------------------------------------------
+# Execute
+# ------------------------------------------
+
+result = service.ingest()
+
+
+# ------------------------------------------
+# Summary
+# ------------------------------------------
+
+print()
+
+print(
+    "Ingestion Summary"
+)
+
+print(
+    "-----------------"
+)
+
+print(
+    (
+        "Accepted transactions: "
+        f"{result.accepted_count}"
+    )
+)
+
+print(
+    (
+        "Rejected transactions: "
+        f"{result.rejected_count}"
+    )
+)
+
+print(
+    (
+        "Duplicate transactions: "
+        f"{result.duplicate_count}"
+    )
+)
+
+print(
+    (
+        "Total amount: "
+        f"{result.total_amount}"
+    )
+)
+
+print(
+    (
+        "Transaction types: "
+        f"{result.transaction_type_counts}"
+    )
+)
+
+print(
+    (
+        "Fraud transactions: "
+        f"{result.fraud_count}"
+    )
+)
+
+print(
+    (
+        "Fraud amount: "
+        f"{result.fraud_amount}"
+    )
+)
+
+print(
+    (
+        "Fraud percentage: "
+        f"{result.fraud_percentage:.2f}%"
+    )
+)

@@ -1,0 +1,34 @@
+[
+    {
+        "transaction_id": "API1001",
+        "transaction_type": "TRANSFER",
+        "transaction_amount": "750.00",
+        "source_account": "C500",
+        "destination_account": "C600",
+        "fraud_flag": 0
+    },
+    {
+        "transaction_id": "API1002",
+        "transaction_type": "PAYMENT",
+        "transaction_amount": "125.50",
+        "source_account": "C501",
+        "destination_account": "M700",
+        "fraud_flag": 0
+    },
+    {
+        "transaction_id": "API1003",
+        "transaction_type": "CASH_OUT",
+        "transaction_amount": "2000.00",
+        "source_account": "C502",
+        "destination_account": "C800",
+        "fraud_flag": 1
+    },
+    {
+        "transaction_id": "API1004",
+        "transaction_type": "TRANSFER",
+        "transaction_amount": "-500.00",
+        "source_account": "C900",
+        "destination_account": "C901",
+        "fraud_flag": 0
+    }
+]
