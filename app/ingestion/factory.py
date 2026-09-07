@@ -17,24 +17,19 @@ def create_source_adapter(
     api_url: str,
     checkpoint_store: CheckpointStore | None = None,
     source_system: str | None = None,
+    api_token: str | None = None,
 ) -> SourceAdapter:
-
-    source_type = (
-        source_type.lower()
-    )
+    source_type = source_type.lower()
 
     if source_type == "csv":
-
         return CSVSourceAdapter(
             file_path=file_path,
             source_system=(
-                source_system
-                or "PAYSIM"
+                source_system or "PAYSIM"
             ),
         )
 
     if source_type == "json":
-
         return JSONSourceAdapter(
             file_path=file_path,
             source_system=(
@@ -44,7 +39,6 @@ def create_source_adapter(
         )
 
     if source_type == "api":
-
         return APISourceAdapter(
             url=api_url,
             checkpoint_store=checkpoint_store,
@@ -52,11 +46,9 @@ def create_source_adapter(
                 source_system
                 or "PARTNER_API"
             ),
+            api_token=api_token,
         )
 
     raise ValueError(
-        (
-            "Unsupported source type: "
-            f"{source_type}"
-        )
+        f"Unsupported source type: {source_type}"
     )

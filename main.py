@@ -32,11 +32,36 @@ settings = Settings()
 
 
 # ------------------------------------------
+# Resolve effective source system
+# ------------------------------------------
+
+default_source_systems = {
+    "csv": "PAYSIM",
+    "json": "PARTNER_JSON",
+    "api": "PARTNER_API",
+}
+
+source_type = settings.source_type.lower()
+
+if source_type not in default_source_systems:
+    raise ValueError(
+        f"Unsupported source type: "
+        f"{settings.source_type}"
+    )
+
+effective_source_system = (
+    settings.source_system
+    or default_source_systems[source_type]
+)
+
+
+# ------------------------------------------
 # Checkpoint state
 # ------------------------------------------
 
 checkpoint_store = CheckpointStore(
-    file_path=settings.checkpoint_file_path
+    file_path=settings.checkpoint_file_path,
+    source_system=effective_source_system,
 )
 
 
@@ -71,11 +96,12 @@ transaction_sink = (
 # ------------------------------------------
 
 adapter = create_source_adapter(
-    source_type=settings.source_type,
+    source_type=source_type,
     file_path=settings.input_file_path,
     api_url=settings.api_url,
     checkpoint_store=checkpoint_store,
-    source_system=settings.source_system,
+    source_system=effective_source_system,
+    api_token=settings.api_token,
 )
 
 
