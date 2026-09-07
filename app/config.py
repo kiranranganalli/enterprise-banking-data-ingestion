@@ -1,28 +1,22 @@
-from pydantic_settings import (
-    BaseSettings,
-    SettingsConfigDict,
-)
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-
-    input_file_path: str = (
-        "data/transactions.csv"
-    )
+    input_file_path: str = "data/transactions.csv"
 
     rejected_file_path: str = (
-        "data/rejected/"
-        "rejected_transactions.jsonl"
+        "data/rejected/rejected_transactions.jsonl"
     )
 
     source_type: str = "csv"
-
     source_system: str | None = None
 
     api_url: str = (
         "http://localhost:8000/"
         "data/api_transactions.json"
     )
+
+    api_token: str | None = None
 
     checkpoint_file_path: str = (
         "data/state/api_checkpoint.json"
