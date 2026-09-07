@@ -1,10 +1,5 @@
 # Enterprise Banking Data Ingestion Service
-
-A production-style Python data ingestion service that ingests banking transaction data from **CSV, JSONL, and REST APIs**, validates and normalizes records into a canonical model, prevents duplicate processing, persists accepted transactions in batches, handles rejected records, and safely recovers from API or application failures.
-
-The project focuses on reliability, correctness, restart safety, source isolation, and measurable ingestion performance.
-
----
+![Tests](https://github.com/kiranranganalli/enterprise-banking-data-ingestion/actions/workflows/tests.yml/badge.svg)
 
 ## Architecture
 
@@ -184,7 +179,7 @@ Batching destination and idempotency operations reduced end-to-end processing ti
 ## Project Structure
 
 ```text
-bank-data-ingestion/
+enterprise-banking-data-ingestion/
 │
 ├── app/
 │   ├── ingestion/
@@ -221,10 +216,14 @@ bank-data-ingestion/
 │   └── logging_config.py
 │
 ├── data/
+├── scripts/
 ├── tests/
+├── Dockerfile
+├── .dockerignore
+├── .env.example
+├── requirements.txt
 ├── main.py
-├── pytest.ini
-└── .env
+└── pytest.ini
 ```
 
 ---
@@ -243,12 +242,16 @@ INPUT_FILE_PATH=data/transactions.csv
 REJECTED_FILE_PATH=data/rejected/rejected_transactions.jsonl
 
 API_URL=http://localhost:8000/data/api_transactions.json
+API_TOKEN=
+
 CHECKPOINT_FILE_PATH=data/state/api_checkpoint.json
 
 IDEMPOTENCY_DATABASE_PATH=data/state/idempotency.db
 TRANSACTION_DATABASE_PATH=data/output/transactions.db
 
 BATCH_SIZE=500
+
+API credentials are supplied through environment variables and are never hard-coded. The local `.env` file is excluded from Git and Docker images.
 ```
 
 Supported source types:
@@ -262,6 +265,55 @@ api
 ---
 
 ## Running the Project
+
+---
+
+## Docker
+
+The service can also run inside a Docker container using Python 3.10 and the dependencies defined in `requirements.txt`.
+
+### Build the image
+
+```bash
+docker build -t enterprise-banking-data-ingestion .
+```
+
+### Run CSV ingestion
+
+```bash
+docker run --rm \
+  -e SOURCE_TYPE=csv \
+  -e SOURCE_SYSTEM=PAYSIM \
+  -e INPUT_FILE_PATH=data/transactions.csv \
+  -e REJECTED_FILE_PATH=data/rejected/rejected_transactions.jsonl \
+  -e IDEMPOTENCY_DATABASE_PATH=data/state/idempotency.db \
+  -e TRANSACTION_DATABASE_PATH=data/output/transactions.db \
+  -e BATCH_SIZE=500 \
+  enterprise-banking-data-ingestion
+```
+
+### Persistent state
+
+SQLite databases and rejected-record output can be persisted outside the container using mounted directories:
+
+```bash
+mkdir -p docker-data/state docker-data/output docker-data/rejected
+
+docker run --rm \
+  -e SOURCE_TYPE=csv \
+  -e SOURCE_SYSTEM=PAYSIM \
+  -e INPUT_FILE_PATH=data/transactions.csv \
+  -e REJECTED_FILE_PATH=data/rejected/rejected_transactions.jsonl \
+  -e IDEMPOTENCY_DATABASE_PATH=data/state/idempotency.db \
+  -e TRANSACTION_DATABASE_PATH=data/output/transactions.db \
+  -e BATCH_SIZE=500 \
+  -v "$(pwd)/docker-data/state:/app/data/state" \
+  -v "$(pwd)/docker-data/output:/app/data/output" \
+  -v "$(pwd)/docker-data/rejected:/app/data/rejected" \
+  enterprise-banking-data-ingestion
+```
+
+The application runs as a non-root user inside the container. Secrets such as API tokens are supplied at runtime and are not included in the Docker image.
 
 ### CSV
 
@@ -334,7 +386,7 @@ pytest -v
 Current test suite:
 
 ```text
-36 tests passing
+39 tests passing
 ```
 
 Coverage includes:
@@ -354,6 +406,9 @@ Coverage includes:
 - sink constraint failures
 - source ID collisions
 - schema migration
+- source-scoped checkpoint isolation
+- API Bearer authentication
+- API token propagation through the adapter factory
 
 ---
 
