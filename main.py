@@ -1,20 +1,11 @@
 from app.checkpoint import CheckpointStore
 from app.config import Settings
-from app.ingestion.factory import (
-    create_source_adapter,
-)
-from app.logging_config import (
-    configure_logging,
-)
-from app.services.ingestion_service import (
-    IngestionService,
-)
-from app.sqlite_idempotency import (
-    SQLiteProcessedTransactionStore,
-)
-from app.sqlite_sink import (
-    SQLiteTransactionSink,
-)
+from app.ingestion.factory import create_source_adapter
+from app.logging_config import configure_logging
+from app.postgres_sink import PostgresTransactionSink
+from app.services.ingestion_service import IngestionService
+from app.sqlite_idempotency import SQLiteProcessedTransactionStore
+from app.sqlite_sink import SQLiteTransactionSink
 
 
 # ------------------------------------------
@@ -69,12 +60,8 @@ checkpoint_store = CheckpointStore(
 # Idempotency state
 # ------------------------------------------
 
-processed_store = (
-    SQLiteProcessedTransactionStore(
-        database_path=(
-            settings.idempotency_database_path
-        )
-    )
+processed_store = SQLiteProcessedTransactionStore(
+    database_path=settings.idempotency_database_path
 )
 
 
@@ -82,13 +69,31 @@ processed_store = (
 # Destination database
 # ------------------------------------------
 
-transaction_sink = (
-    SQLiteTransactionSink(
-        database_path=(
-            settings.transaction_database_path
-        )
+database_backend = settings.database_backend.lower()
+
+if database_backend == "sqlite":
+
+    transaction_sink = SQLiteTransactionSink(
+        database_path=settings.transaction_database_path
     )
-)
+
+elif database_backend == "postgres":
+
+    if not settings.database_url:
+        raise ValueError(
+            "DATABASE_URL is required "
+            "when DATABASE_BACKEND=postgres"
+        )
+
+    transaction_sink = PostgresTransactionSink(
+        database_url=settings.database_url
+    )
+
+else:
+    raise ValueError(
+        f"Unsupported database backend: "
+        f"{settings.database_backend}"
+    )
 
 
 # ------------------------------------------
@@ -111,9 +116,7 @@ adapter = create_source_adapter(
 
 service = IngestionService(
     adapter=adapter,
-    rejected_file_path=(
-        settings.rejected_file_path
-    ),
+    rejected_file_path=settings.rejected_file_path,
     processed_store=processed_store,
     sink=transaction_sink,
     checkpoint_store=checkpoint_store,
@@ -133,67 +136,45 @@ result = service.ingest()
 # ------------------------------------------
 
 print()
+print("Ingestion Summary")
+print("-----------------")
 
 print(
-    "Ingestion Summary"
+    "Accepted transactions: "
+    f"{result.accepted_count}"
 )
 
 print(
-    "-----------------"
+    "Rejected transactions: "
+    f"{result.rejected_count}"
 )
 
 print(
-    (
-        "Accepted transactions: "
-        f"{result.accepted_count}"
-    )
+    "Duplicate transactions: "
+    f"{result.duplicate_count}"
 )
 
 print(
-    (
-        "Rejected transactions: "
-        f"{result.rejected_count}"
-    )
+    "Total amount: "
+    f"{result.total_amount}"
 )
 
 print(
-    (
-        "Duplicate transactions: "
-        f"{result.duplicate_count}"
-    )
+    "Transaction types: "
+    f"{result.transaction_type_counts}"
 )
 
 print(
-    (
-        "Total amount: "
-        f"{result.total_amount}"
-    )
+    "Fraud transactions: "
+    f"{result.fraud_count}"
 )
 
 print(
-    (
-        "Transaction types: "
-        f"{result.transaction_type_counts}"
-    )
+    "Fraud amount: "
+    f"{result.fraud_amount}"
 )
 
 print(
-    (
-        "Fraud transactions: "
-        f"{result.fraud_count}"
-    )
-)
-
-print(
-    (
-        "Fraud amount: "
-        f"{result.fraud_amount}"
-    )
-)
-
-print(
-    (
-        "Fraud percentage: "
-        f"{result.fraud_percentage:.2f}%"
-    )
+    "Fraud percentage: "
+    f"{result.fraud_percentage:.2f}%"
 )

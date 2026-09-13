@@ -30,6 +30,9 @@ class Settings(BaseSettings):
         "data/output/transactions.db"
     )
 
+    database_backend: str = "sqlite"
+    database_url: str | None = None
+
     batch_size: int = 500
 
     model_config = SettingsConfigDict(
